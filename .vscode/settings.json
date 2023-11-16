@@ -1,0 +1,8 @@
+{
+    "python.analysis.extraPaths": [
+        "./Automation_Framework"
+    ],
+    "cSpell.words": [
+        "htmlpath"
+    ]
+}
