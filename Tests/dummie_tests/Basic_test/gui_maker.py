@@ -9,11 +9,11 @@ def gui_interface(test_name):
     layout = [
         [sg.Text(test_name)],
         [sg.Button('Passed'), sg.Button('Failed'), sg.Button('Skipped')],
-        [sg.Text('Skipped message'), sg.Combo( ['Test not useful',
+        [sg.Text('Skipped message', key= 'Skip_message', visible = False), sg.Combo( ['Test not useful',
                                                'Old test',
                                                'Test cannot be used now',
                                                'Test not finished'], key = 'Combo', enable_events=True, visible = False)],
-        [sg.Text('Failed message'), sg.Input(enable_events=True, key = '-Fail-', visible = False)],
+        [sg.Text('Failed message', key= 'Fail_message', visible = False), sg.Input(enable_events=True, key = '-Fail-', visible = False)],
         [sg.Button('Done', key = 'Done_for_Failed', visible=False)],
         [sg.Button('Done', key = 'Done_for_Skipped', visible=False)],
     ]
@@ -31,11 +31,15 @@ def gui_interface(test_name):
             break
             
         elif event == 'Failed':
-            window["-Fail-"].update(visible = True)
+            window['Fail_message'].update(visible = True)
+            window['-Fail-'].update(visible = True)
             window['Failed'].update(disabled= True)
-            window["Combo"].update(visible = False)
+            window['Combo'].update(visible = False)
             window['Skipped'].update(disabled = False)
             window['Done_for_Skipped'].update(visible = False)
+            window['Skip_message'].update(visible = False)
+            
+            
             
         elif event =='-Fail-':
             window["Done_for_Failed"].update(visible = True)
@@ -48,18 +52,19 @@ def gui_interface(test_name):
             break
             
         elif event == "Skipped":
+            window['Skip_message'].update(visible = True)
             window["Combo"].update(visible = True)
             window['Skipped'].update(disabled= True)
             window["-Fail-"].update(visible = False)
             window['Failed'].update(disabled = False)
             window['Done_for_Failed'].update(visible = False)
+            window['Fail_message'].update(visible = False)
+            
             
         elif event =='Combo':
             window["Done_for_Skipped"].update(visible = True)
-            # print(values['Combo'])
             
         elif event == 'Done_for_Skipped':
-            # pytest.skip(values['Combo'])
             result.append("skipped")
             result.append(values['Combo'])
             break

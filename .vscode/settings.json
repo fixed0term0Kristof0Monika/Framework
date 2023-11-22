@@ -1,8 +1,12 @@
 {
     "python.analysis.extraPaths": [
-        "./Automation_Framework"
+        "./Automation_Framework",
+        "./Automation_Framework/Tenmacontrol"
     ],
     "cSpell.words": [
-        "htmlpath"
+        "Canoecontrol",
+        "canoeobj",
+        "htmlpath",
+        "Tenmacontrol"
     ]
 }

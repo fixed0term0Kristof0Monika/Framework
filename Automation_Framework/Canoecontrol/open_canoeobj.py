@@ -7,6 +7,12 @@ import tkinter.filedialog
 import tkinter as tk
 from win32com.client import *
 from win32com.client.connect import *
+import sys
+
+# As initialized upon program startup, the first item of this list, path[0], is the directory containing the script that was used to invoke the Python interpreter.
+sys.path.insert(1, "Automation_Framework\Tenmacontrol")
+
+from tenma_control import Tenm
  
 #implementing a class which has the following modules:
 #open CANoe by user input of the specific configuration file
@@ -93,18 +99,25 @@ class Canoe:
             raise ValueError("Value not corresponding")
             
     #Connectivity with ethernet 
-    def Connect_DOIP(self, var):    
-        while self.get_EnvVar("Env_DoipNetStatus") == "":
-            try:
-                self.set_EnvVar(var, 1)
-                wait(2)
-                self.set_EnvVar(var, 0)   
-            except AttributeError:
-                print("Wrong value or Environment variable")
-            
-        return True   
-        
-            
+    def Connect_DOIP(self):
+        var = "Env_DoipConnectVeh"   
+        self.set_EnvVar(var, 1)
+        wait(2) 
+        self.set_EnvVar(var, 0)
+
+        i =0 # flag
+        while self.get_EnvVar("Env_DoipNetStatus") != "DOIP CONNECTION ESTABILISHED":
+            self.restart_canoe() # restart simulation
+            if i == 1:
+               Tenm.restart_tenma() #restart camera
+            if i > 1:
+                return False
+            self.set_EnvVar(var, 1)
+            wait(2) 
+            self.set_EnvVar(var, 0)
+            i+=1
+        return True
+     
             
     # Reading DTC   
     def Read_DTC(self):
@@ -130,11 +143,16 @@ class Canoe:
             
         rec= self.get_EnvVar("Env_DoipDirectReceive")
         if rec == "C0B501":
-            return "Positive response"
-        elif rec == "7F8011":
-            return "Service not supported"
+            return True # "Positive response" 
         else:
-            return "Error"
+            #restart camera 1101 la envdirectsend se foloseste senddiag (functie)
+            # if 5101 (envdirectreceived) -> positive response 
+            # se verifica consumul de pe tenma if >1.3A -> pass
+                                                # else -> restart tenma return 1
+                                                # se reia doip connect return 2
+            
+            return False # "Service not supported" 
+       
         
     #RBEOL_unlock
     def RBEOL_unlock(self):
@@ -147,12 +165,21 @@ class Canoe:
         
         rec= self.get_EnvVar("Env_DoipDirectReceive")    
         if rec == "6762":
-            return "Positive response"
+            return True #"Positive response" 
         elif rec == "7F2712":
-            return "Service not supported"
-        else:
-            return "Error"    
-     
+            return False # "Service not supported" 
+       
+       
+    def TesterPresent(self):
+        # set the tester present button to on
+        self.set_EnvVar("Env_DoipTesterPresentOnOff", 1)
+        
+    def ExtendedDiag(self): #Diag. Session button manipulation
+        self.set_EnvVar("Env_DoipExtSession", 1)
+        
+    def Rastart_camera(self):
+        # 1101 has to be introduced to the EnvDirectSend input field
+        self.send_diagnostic("diag_ecu_qualifier_name", "1101") # don't know which diag_name to put
             
         
     #stop measurements
@@ -165,6 +192,11 @@ class Canoe:
         wait(5)
         self.canoe_inst.quit()
         
+    # function to restart the measurments 
+    def restart_canoe(self):
+        # wait odule is included in the stop_measur() / str_measur() functions
+        self.stop_measur()
+        self.str_measur()
 
 # additional function 
 def splitDiagResponse(str_var):

@@ -1,6 +1,5 @@
 
-
-
+import time
 from tenma import Tenma72_2540
 
 
@@ -54,4 +53,10 @@ class Tenm:
             return self.tenma.readCurrent(1)  
         except:
             print("Can't read current")
+            
+    # function to restart tenma which restart the camera also
+    def restart_tenma(self):
+        self.tenma_off()
+        time.sleep(3)
+        self.tenma_on()
            
