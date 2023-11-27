@@ -145,13 +145,18 @@ class Canoe:
         if rec == "C0B501":
             return True # "Positive response" 
         else:
-            #restart camera 1101 la envdirectsend se foloseste senddiag (functie)
+            self.Rastart_camera()
             # if 5101 (envdirectreceived) -> positive response 
+            
+            if self.get_EnvVar("Env_DoipDirectReceive") == "5101": 
+                if Tenm.getC()> 1.3:
+                    return True # posistive response
             # se verifica consumul de pe tenma if >1.3A -> pass
                                                 # else -> restart tenma return 1
-                                                # se reia doip connect return 2
+                else:                           # se reia doip connect return 2
+                    Tenm.restart_tenma() 
+                    return False# "Service not supported" 
             
-            return False # "Service not supported" 
        
         
     #RBEOL_unlock
@@ -179,7 +184,7 @@ class Canoe:
         
     def Rastart_camera(self):
         # 1101 has to be introduced to the EnvDirectSend input field
-        self.send_diagnostic("diag_ecu_qualifier_name", "1101") # don't know which diag_name to put
+        self.send_diagnostic("MPC03T", "1101") # don't know which diag_name to put
             
         
     #stop measurements
